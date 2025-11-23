@@ -56,5 +56,51 @@ class Tree {
     }   
   }
 
+  levelOrderForEach(callback) {
+    const queue = [this.root];
+    const levelOrderList = [];
+    while (queue.length > 0) {
+      const currentNode = queue.shift();
+      callback ? callback(currentNode) : levelOrderList.push(currentNode.value);
+
+      const enqueueList = [
+        currentNode?.leftChild,
+        currentNode?.rightChild
+      ].filter((value) => value);
+      queue.push(...enqueueList);
+    }
+    if (levelOrderList.length > 0) return levelOrderList;
+  }
+
+  inOrderForEach(callback, node = this.root, inOrderList = []) {
+    if (node === null) return;
+
+    this.inOrderForEach(callback, node.leftChild, inOrderList);
+    callback ? callback(node) : inOrderList.push(node.value);
+    this.inOrderForEach(callback, node.rightChild, inOrderList)
+
+    if (inOrderList.length > 0) return inOrderList;
+  }
+
+  preOrderForEach(callback, node = this.root, preOrderList = []) {
+    if (node === null) return;
+
+    callback ? callback(node) : preOrderList.push(node.value);
+    this.preOrderForEach(callback, node.leftChild, preOrderList);
+    this.preOrderForEach(callback, node.rightChild, preOrderList);
+
+    if (preOrderList.length > 0) return preOrderList;
+  }
+
+  postOrderForEach(callback, node = this.root, postOrderList = []) {
+    if (node === null) return;
+
+    this.postOrderForEach(callback, node.leftChild, postOrderList);
+    this.postOrderForEach(callback, node.rightChild, postOrderList);
+    callback ? callback(node) : postOrderList.push(node.value);
+
+    if (postOrderList.length > 0) return postOrderList;
+  }
+
 
 }
