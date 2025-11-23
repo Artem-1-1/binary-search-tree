@@ -1,12 +1,12 @@
 class Node {
-  constructor(data) {
-    this.data = data,
+  constructor(value) {
+    this.value = value,
     this.leftChild = null;
     this.rightChild = null; 
   }
 }
 
-export class Tree {
+export class BinaryTree {
   constructor(array) {
     const sortedArray = [...new Set(array)].sort((a, b) => a - b);
     this.root = this.buildTree(sortedArray)
@@ -16,18 +16,18 @@ export class Tree {
     if (sortedArray.length === 0) return null;
 
     const midPoint = Math.floor(sortedArray.length / 2);
-    const newNode = Node(sortedArray[midPoint]);
+    const newNode = new Node(sortedArray[midPoint]);
     newNode.leftChild = this.buildTree(sortedArray.slice(0, midPoint));
     newNode.rightChild = this.buildTree(sortedArray.slice(midPoint + 1));
     return newNode;
   }
 
   insert(value, currentNode = this.root) {
-    if (currentNode === null) return Node(value);
+    if (currentNode === null) return new Node(value);
     if (currentNode.value === value) return;
 
     if (currentNode.value < value) {
-      currentNode.rightChild = this.insert(value, currentNode.right);
+      currentNode.rightChild = this.insert(value, currentNode.rightChild);
     } else {
       currentNode.leftChild = this.insert(value, currentNode.leftChild);
     }
@@ -37,11 +37,13 @@ export class Tree {
   remove(value, currentNode = this.root) {
     if (currentNode === null) return currentNode;
 
-    if (currentNode === value) return;
+    if (currentNode.value === value) {
+      currentNode = this.#removeNodeHelper(currentNode);
+    }
     else if (currentNode.value > value) {
       currentNode.leftChild = this.remove(value, currentNode.leftChild);
     } else {
-      currentNode.rightChild = this.remove(value, currentNode.right);
+      currentNode.rightChild = this.remove(value, currentNode.rightChild);
     }
     return currentNode;
   }
@@ -103,7 +105,7 @@ export class Tree {
   }
 
   height(node = this.root) {
-    if (node === null) return;
+    if (node === null) return 0;
 
     const leftHeight = this.height(node.leftChild);
     const rightHeight = this.height(node.rightChild);  
@@ -112,7 +114,7 @@ export class Tree {
   }
 
   depth(value, node = this.root, edgeCount = 0) {
-    if (node === null) return;
+    if (node === null) return null;
     if (node.value === value) return edgeCount;
 
     if (node.value < value) {
@@ -131,18 +133,36 @@ export class Tree {
     this.root = this.buildTree(inOrderList);
   }
 
-  prettyPrint = (node, prefix = '', isLeft = true) => {
-    if (node === null) {
-      return;
+  prettyPrint(node = this.root, prefix = "", isLeft = true) {
+    if (node.rightChild) {
+      this.prettyPrint(node.rightChild, `${prefix}${isLeft ? '|   ' : '    '}`, false)
     }
-    if (node.right !== null) {
-      prettyPrint(node.right, `${prefix}${isLeft ? '│   ' : '    '}`, false);
+    console.log(`${prefix}${isLeft ? '└── ' : '┌── '}${node.value}`);
+    if (node.leftChild) {
+      this.prettyPrint(node.leftChild, `${prefix}${isLeft ? '    ' : '|   '}`, true)
     }
-    console.log(`${prefix}${isLeft ? '└── ' : '┌── '}${node.data}`);
-    if (node.left !== null) {
-      prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
+  }
+
+  #inOrderSuccessorFor(node) {
+    let currentNode = node;
+    while (currentNode.leftChild) {
+      currentNode = currentNode.leftChild;
     }
-  };
+    return currentNode;
+  }
+
+  #removeNodeHelper(node) {
+    if (node.leftChild && node.rightChild) {
+      const successorNode = this.#inOrderSuccessorFor(node.rightChild);
+      node.value = successorNode.value;
+      node.rightChild = this.remove(successorNode.value, node.rightChild);
+      return node;
+    } else {
+      const replacementNode = node.rightChild || node.leftChild;
+      node = null;
+      return replacementNode;
+    }
+  }
 
   #testBalance(node) {
     if (node === null) return 0;
