@@ -1,4 +1,4 @@
-leftChildclass Node {
+class Node {
   constructor(data) {
     this.data = data,
     this.leftChild = null;
@@ -102,5 +102,59 @@ class Tree {
     if (postOrderList.length > 0) return postOrderList;
   }
 
+  height(node = this.root) {
+    if (node === null) return;
 
+    const leftHeight = this.height(node.leftChild);
+    const rightHeight = this.height(node.rightChild);  
+
+    return Math.max(leftHeight, rightHeight) + 1;
+  }
+
+  depth(value, node = this.root, edgeCount = 0) {
+    if (node === null) return;
+    if (node.value === value) return edgeCount;
+
+    if (node.value < value) {
+      return this.depth(value, node.rightChild, edgeCount + 1);
+    } else {
+      return this.depth(value, node.leftChild, edgeCount + 1)
+    }
+  }
+
+  isBalanced() {
+    return this.#testBalance(this.root) !== -1;
+  }
+
+  rebalance() {
+    const inOrderList = this.inOrderForEach();
+    this.root = this.buildTree(inOrderList);
+  }
+
+  prettyPrint = (node, prefix = '', isLeft = true) => {
+    if (node === null) {
+      return;
+    }
+    if (node.right !== null) {
+      prettyPrint(node.right, `${prefix}${isLeft ? '│   ' : '    '}`, false);
+    }
+    console.log(`${prefix}${isLeft ? '└── ' : '┌── '}${node.data}`);
+    if (node.left !== null) {
+      prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
+    }
+  };
+
+  #testBalance(node) {
+    if (node === null) return 0;
+
+    const leftBalance = this.#testBalance(node.leftChild);
+    const rightBalance = this.#testBalance(node.rightChild);
+    const diff = Math.abs(leftBalance - rightBalance);
+
+    if (leftBalance === -1 || rightBalance === -1 || diff > 1) {
+      return -1;
+    } else {
+      return Math.max(leftBalance, rightBalance) + 1;
+    }
+  }
 }
